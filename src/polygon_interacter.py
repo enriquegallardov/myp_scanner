@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib.lines import Line2D
 from matplotlib.artist import Artist
 
-
 class PolygonInteractor(object):
     """
     A polygon editor
