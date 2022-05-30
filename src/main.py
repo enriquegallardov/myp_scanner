@@ -1,13 +1,13 @@
 from flask import Flask, flash, request, redirect, send_file
 import os
 from scanner import DocScanner
-from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename, safe_join
 
 app = Flask(__name__)
 app.config.from_prefixed_env()
 scanner = DocScanner(True)
 
-os.makedirs(os.path.join(app.instance_path, "htmlfi"), exist_ok=True)
+os.makedirs(safe_join(app.instance_path, "htmlfi"), exist_ok=True)
 
 valid_formats = ["jpg", "jpeg", "jp2", "png", "bmp", "tiff", "tif"]
 get_ext = lambda f: os.path.splitext(f)[1].lower()
@@ -19,6 +19,10 @@ def allowed_file(filename):
 
 @app.route("/", methods=["GET", "POST"])
 def upload_file():
+    # clear the instance/htmlfi directory
+    for f in os.listdir(safe_join(app.instance_path, "htmlfi")):
+        os.remove(safe_join(app.instance_path, "htmlfi", f))
+
     if request.method == "POST":
         # check if the post request has the file part
         if "file" not in request.files:
@@ -33,16 +37,14 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(
-                os.path.join(
-                    app.instance_path, "htmlfi", secure_filename(file.filename)
-                )
+                safe_join(app.instance_path, "htmlfi", secure_filename(file.filename))
             )
             processed_filename = scanner.scan(
-                os.path.join(app.instance_path, "htmlfi", filename)
+                safe_join(app.instance_path, "htmlfi", filename)
             )
             os.remove(os.path.join(app.instance_path, "htmlfi", filename))
             return send_file(
-                os.path.join(app.instance_path, "htmlfi", processed_filename),
+                safe_join(app.instance_path, "htmlfi", processed_filename),
                 as_attachment=True,
             )
     return """
