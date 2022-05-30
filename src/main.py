@@ -1,5 +1,4 @@
-import re
-from flask import Flask, flash, request, redirect, url_for
+from flask import Flask, flash, request, redirect, send_file
 import os
 from scanner import DocScanner
 from werkzeug.utils import secure_filename
@@ -38,8 +37,14 @@ def upload_file():
                     app.instance_path, "htmlfi", secure_filename(file.filename)
                 )
             )
-            scanner.scan(os.path.join(app.instance_path, "htmlfi", filename))
-            return redirect(url_for("upload_file", name=filename))
+            processed_filename = scanner.scan(
+                os.path.join(app.instance_path, "htmlfi", filename)
+            )
+            os.remove(os.path.join(app.instance_path, "htmlfi", filename))
+            return send_file(
+                os.path.join(app.instance_path, "htmlfi", processed_filename),
+                as_attachment=True,
+            )
     return """
     <!doctype html>
     <title>Upload new File</title>

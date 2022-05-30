@@ -294,7 +294,7 @@ class DocScanner(object):
     def scan(self, image_path):
 
         RESCALED_HEIGHT = 500.0
-        OUTPUT_DIR = "output"
+        OUTPUT_DIR = "instance/htmlfi"
 
         image = cv2.imread(image_path)
         assert image is not None
@@ -326,19 +326,17 @@ class DocScanner(object):
 
         # save the transformed image
         basename = os.path.basename(image_path)
-        # save thresh to output directory if it exists else create it and save it
+
         if not os.path.exists(OUTPUT_DIR):
             os.makedirs(OUTPUT_DIR)
-        cv2.imwrite(os.path.join(OUTPUT_DIR, basename), thresh)
-
-        print("Tesseract OCR:")
-        print(pytesseract.image_to_string(thresh))
 
         # save pytesseract image to pdf
         pdf_path = os.path.join(OUTPUT_DIR, basename.split(".")[0] + ".pdf")
-        with open(pdf_path, "wb") as f:
+        print(pdf_path)
+        with open(
+            pdf_path,
+            "wb",
+        ) as f:
             f.write(pytesseract.image_to_pdf_or_hocr(thresh))
-        print("Saved to: {}".format(pdf_path))
 
-        print("Proccessed " + basename)
-        return OUTPUT_DIR + "/" + basename
+        return basename.split(".")[0] + ".pdf"
